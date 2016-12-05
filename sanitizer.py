@@ -4,7 +4,7 @@ import string
 
 #Sydney says hello!
 
-def getRegex():
+def getRegex_phone():
   regular_expression = re.compile(r"\(?"  # open parenthesis
                                   r"(\d{3})?"  # area code
                                   r"\)?"  # close parenthesis
@@ -13,6 +13,10 @@ def getRegex():
                                   r"[\s\.-]{0,3}"  # 3 digit local, 4 digit local separator
                                   r"(\d{4})"  # 4 digit local
                                   , re.IGNORECASE)
+  return regular_expression
+
+def getRegex_zip():
+  regular_expression = re.compile(r'.*(\d{5}(\-\d{4})?)$')
   return regular_expression
 
 
@@ -26,21 +30,28 @@ def removePhoneAndWeb(line, tags, regex):
       #end#
 
     try:
-      result = re.search(regex, word)
+      result = re.search(regex_phone, word)
       if result:
         line = line.replace(word, '<PHONE-NUMBER>')
     except:
       pass
+    try:
+      result = re.search(regex_zip, word)
+      if result:
+        line = line.replace(word, '<ZIP-CODE>')
+    except:
+       pass
   return line
 
 
 def removePII(resumeLines, pii):
   tags =  ['.com', '.edu', 'http', 'https', '.org', '.net', 'www.']
-  regex = getRegex()
+  regex_phone = getRegex_phone()
+  regex_zip = getRegex_zip()
   #removePhoneAndWeb(resumeLines)
   i = 0 #ratchet -thomas
   for line in resumeLines:
-    line = removePhoneAndWeb(line, tags, regex)
+    line = removePhoneAndWeb(line, tags, regex_phone, regex_zip)
     for pairs in pii:
       pair = pairs.split('\\')
       line = line.replace(pair[0], '<' + pair[1] + '>')
